@@ -1,37 +1,55 @@
-document.addEventListener("DOMContentLoaded", function() {
-    const generateButton = document.getElementById("generate");
-    const saveButton = document.getElementById("save");
-    const qrCodeContainer = document.getElementById("qrcode");
-    const urlInput = document.getElementById("url");
-    const sizeSelect = document.getElementById("size");9 
-    const colorDarkInput = document.getElementById("colorDark");
-    const colorLightInput = document.getElementById("colorLight");
+const frm=document.querySelector('#frm');
+const output=document.querySelector('#output');
+const spinner=document.querySelector('#loading');
+const qrcodeElement=document.querySelector('#qrcode');
+const btnSave=document.querySelector('#btn-save');
 
-    generateButton.addEventListener("click", function() {
-        const url = urlInput.value;
-        const size = sizeSelect.value;
-        const colorDark = colorDarkInput.value;
-        const colorLight = colorLightInput.value;
 
-        const qrCodeText = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&size=${size}&color=${colorDark}&bgcolor=${colorLight}`;
-        qrCodeContainer.innerHTML = `<img src="${qrCodeText}" alt="Generated QR Code">`;
-    });
 
-    saveButton.addEventListener("click", function() {
-        const qrImage = qrCodeContainer.querySelector("img");
-        if (qrImage) {
-            const canvas = document.createElement("canvas");
-            canvas.width = qrImage.width;
-            canvas.height = qrImage.height;
-            const context = canvas.getContext("2d");
-            context.drawImage(qrImage, 0, 0);
+function generateQRCode(e){
+  e.preventDefault();
+  const url=document.querySelector('#url').value;
+  const size=document.querySelector('#size').value;
+  const clrDark=document.querySelector('#colorDark').value;
+  const clrLight=document.querySelector('#colorLight').value;
 
-            const link = document.createElement("a");
-            canvas.toBlob(function(blob) {
-                link.href = URL.createObjectURL(blob);
-                link.download = "qrcode.png";
-                link.click();   
-            });
-        }
-    });
+  if(url===""){
+    alert("Please Enter Your Website Link");
+  }else{
+    //Show Spinner
+    spinner.style.display='flex';
+
+    setTimeout(()=>{
+
+        //Hide Spinner
+        spinner.style.display='none';
+        qrcodeElement.innerHTML="";
+
+        const qrcode=new QRCode('qrcode',{
+          text: url,
+          width: size,
+	        height: size,
+          colorDark : clrDark,
+	        colorLight : clrLight,
+          correctLevel : QRCode.CorrectLevel.H
+        });
+
+
+    },1000);
+
+    
+    createDownloadLink();
+  }
+}
+frm.addEventListener('submit',generateQRCode);
+
+function createDownloadLink(){
+  const imgSrc=qrcodeElement.querySelector('img').src;
+  btnSave.href=imgSrc;
+}
+
+btnSave.addEventListener('click',()=>{
+  setTimeout(()=>{
+    btnSave.download='qrcode';
+  },50);
 });
